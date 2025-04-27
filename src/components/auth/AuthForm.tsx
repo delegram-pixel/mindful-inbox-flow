@@ -1,52 +1,35 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Link } from 'react-router-dom';
-import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface AuthFormProps {
   mode?: 'login' | 'signup';
-  onSubmit?: (data: { email: string; password: string; name?: string }) => void;
 }
 
-const AuthForm: React.FC<AuthFormProps> = ({ mode = 'login', onSubmit }) => {
+const AuthForm: React.FC<AuthFormProps> = ({ mode = 'login' }) => {
   const [activeTab, setActiveTab] = useState<string>(mode);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
+  const { signIn, signUp } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      // In a real app, you would call your authentication service here
-      if (onSubmit) {
-        onSubmit({ email, password, ...(activeTab === 'signup' ? { name } : {}) });
+      if (activeTab === 'login') {
+        await signIn(email, password);
       } else {
-        // Simulate authentication for demo purposes
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        
-        toast({
-          title: activeTab === 'login' ? 'Welcome back!' : 'Account created!',
-          description: activeTab === 'login' 
-            ? 'You have successfully logged in.' 
-            : 'Your account has been created successfully.',
-        });
-
-        // In a real app, you would redirect to the dashboard here
+        await signUp(email, password, name);
       }
     } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Authentication failed',
-        description: 'Please check your credentials and try again.',
-      });
+      console.error('Authentication error:', error);
     } finally {
       setIsLoading(false);
     }
