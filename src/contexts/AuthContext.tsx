@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -28,10 +27,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setSession(session);
         setUser(session?.user ?? null);
         
-        if (event === 'SIGNED_IN') {
-          navigate('/dashboard');
+        if (event === 'SIGNED_IN' || event === 'SIGNED_UP') {
+          navigate('/');
+          toast({
+            title: "Welcome!",
+            description: event === 'SIGNED_IN' ? "You've successfully signed in." : "Your account has been created successfully."
+          });
         } else if (event === 'SIGNED_OUT') {
           navigate('/');
+          toast({
+            title: "Signed out",
+            description: "You've been successfully signed out."
+          });
         }
       }
     );
@@ -43,7 +50,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, toast]);
 
   const signIn = async (email: string, password: string) => {
     try {
